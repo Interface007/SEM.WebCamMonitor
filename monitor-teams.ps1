@@ -4,22 +4,23 @@ $nextShellyPoll = Get-Date
 $profilePath = ($env:LOCALAPPDATA).Replace('\', '#')
 
 while ($true) {
-    $webcamOn = (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\NonPackaged\$($profilePath)#Microsoft#Teams#current#Teams.exe" -Name 'LastUsedTimeStop') -eq 0
+    $webcamOn = (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\NonPackaged\$($profilePath)#Microsoft#Teams#current#Teams.exe" -Name 'LastUsedTimeStop') -eq 0  `
+        -or     (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\MSTeams_8wekyb3d8bbwe" -Name 'LastUsedTimeStop') -eq 0
     
     if ((Get-Date) -gt $nextShellyPoll) { 
         $shellyOn = (((Invoke-WebRequest -Method GET "http://$($shelly)/rpc/Switch.GetStatus?id=0") | ConvertFrom-Json).output) -eq "True"
-        Out-Default -InputObject "new light status: $($shellyOn)"
+        Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH-mm-ss') ... new light status: $($shellyOn)"
         $nextShellyPoll = (Get-Date).AddSeconds(60)        
     }
 
     if (!($webcamOn) -and $shellyOn) {
-        Out-Default -InputObject "switching OFF"
+        Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH-mm-ss') ... switching OFF" -ForegroundColor DarkBlue
         Invoke-WebRequest -Method GET "http://$($shelly)/rpc/Switch.Set?id=0&on=false"
         $nextShellyPoll = Get-Date
     }
 
     if ($webcamOn -and !($shellyOn)) {
-        Out-Default -InputObject "switching ON"
+        Write-Host "$(Get-Date -Format 'yyyy-MM-dd HH-mm-ss') ... switching ON" -ForegroundColor Green
         Invoke-WebRequest -Method GET "http://$($shelly)/rpc/Switch.Set?id=0&on=true"
         $nextShellyPoll = Get-Date
     }
