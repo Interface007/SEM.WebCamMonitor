@@ -6,8 +6,13 @@ $profilePath = ($env:LOCALAPPDATA).Replace('\', '#')
 $teamsApp = Get-AppxPackage -Name MSTeams
 
 while ($true) {
-    $webcamOn = (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\NonPackaged\$($profilePath)#Microsoft#Teams#current#Teams.exe" -Name 'LastUsedTimeStop') -eq 0  `
-        -or (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\$($teamsApp.PackageFamilyName)" -Name 'LastUsedTimeStop') -eq 0
+    $webcamOn = $false
+
+    try {
+        $webcamOn = (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\NonPackaged\$($profilePath)#Microsoft#Teams#current#Teams.exe" -Name 'LastUsedTimeStop' -ErrorAction SilentlyContinue) -eq 0  `
+                -or (Get-ItemPropertyValue -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\$($teamsApp.PackageFamilyName)"                                -Name 'LastUsedTimeStop' -ErrorAction SilentlyContinue) -eq 0
+    }
+    catch { }
     
     try {
         if ((Get-Date) -gt $nextShellyPoll) { 
