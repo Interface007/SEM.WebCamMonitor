@@ -13,3 +13,10 @@ setx ShellyWebCamLight 192.168.22.231
 The script will simply run an endless loop testing the current status of a registry key that holds the last start and end of camera usage of MS Teams.
 While the camera is on, the end-time is `0`, so we can use this as a hint that the camera is currently active.
 When the camera is active and the device is `off`, it will switch on the device. When the camera is off (value is different to `0`) and the device is on, it will switch off the device.
+
+## Known issues
+The script uses Get-AppxPackage, which (unfortunately) cannot be called in PowerShell 7 (I don't understand, why some maintainers still stick to the PS5 version, but that's another story). 
+If you call the script from PowerShell 7 (like I do), you need to call it with PowerShell 5:
+``` PowerShell
+Start-Process -FilePath "powershell.exe" -ArgumentList "-noexit","-File `".\monitor-teams.ps1`""
+```
